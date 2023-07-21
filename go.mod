@@ -1,4 +1,4 @@
-module go.katupy.io/lib
+module go.katupy.io/klib
 
 go 1.19
 
