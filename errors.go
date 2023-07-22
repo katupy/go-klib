@@ -2,56 +2,37 @@ package klib
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
 
 const (
-	// Common.
-	ErrInternalError      = "INTERNAL_ERROR"
-	ErrUnknownError       = "UNKNOWN_ERROR"
-	ErrForwardedError     = "FORWARDED_ERROR"
-	ErrUnimplemented      = "UNIMPLEMENTED"
-	ErrExecutionError     = "EXECUTION_ERROR"
-	ErrTypeAssertionError = "TYPE_ASSERTION_ERROR"
-	ErrConditionFailed    = "CONDITION_FAILED"
-
-	// Variable.
-	ErrMissingArgument     = "MISSING_ARGUMENT"
-	ErrInvalidArgument     = "INVALID_ARGUMENT"
-	ErrUndefinedArgument   = "UNDEFINED_ARGUMENT"
-	ErrUnknownArgument     = "UNKNOWN_ARGUMENT"
-	ErrUnsupportedArgument = "UNSUPPORTED_ARGUMENT"
-	ErrContentExpected     = "CONTENT_EXPECTED"
-	ErrUnexpectedContent   = "UNEXPECTED_CONTENT"
-	ErrParseError          = "PARSE_ERROR"
-	ErrBufferError         = "BUFFER_ERROR"
-
-	// Network.
-	ErrNetworkError = "NETWORK_ERROR"
-
-	// Object.
-	ErrAlreadyExists     = "ALREADY_EXISTS"
-	ErrMarshalingError   = "MARSHALING_ERROR"
-	ErrUnmarshalingError = "UNMARSHALING_ERROR"
-
-	// File.
-	ErrFilesystemError = "FILESYSTEM_ERROR"
-	ErrOpenFileError   = "OPEN_FILE_ERROR"
-	ErrReadFileError   = "READ_FILE_ERROR"
-	ErrWriteFileError  = "WRITE_FILE_ERROR"
-
-	// Database.
-	ErrDatabaseError = "DATABASE_ERROR"
-
-	// Auth.
-	ErrUnauthenticated = "UNAUTHENTICATED"
-	ErrUnauthorized    = "UNAUTHORIZED"
-
-	// Deadline.
-	ErrExpired  = "EXPIRED"
-	ErrAborted  = "ABORTED"
-	ErrCanceled = "CANCELED"
+	CodeAborted            = "ABORTED"
+	CodeAlreadyExists      = "ALREADY_EXISTS"
+	CodeBufferError        = "BUFFER_ERROR"
+	CodeCanceled           = "CANCELED"
+	CodeConditionFailed    = "CONDITION_FAILED"
+	CodeDatabaseError      = "DATABASE_ERROR"
+	CodeExecutionError     = "EXECUTION_ERROR"
+	CodeExpired            = "EXPIRED"
+	CodeFileError          = "FILE_ERROR"
+	CodeForwardedError     = "FORWARDED_ERROR"
+	CodeInternalError      = "INTERNAL_ERROR"
+	CodeInvalidValue       = "INVALID_VALUE"
+	CodeMissingValue       = "MISSING_VALUE"
+	CodeNetworkError       = "NETWORK_ERROR"
+	CodeNotFound           = "NOT_FOUND"
+	CodeOpenFileError      = "OPEN_FILE_ERROR"
+	CodeParseError         = "PARSE_ERROR"
+	CodeSerializationError = "SERIALIZATION_ERROR"
+	CodeTypeAssertionError = "TYPE_ASSERTION_ERROR"
+	CodeUnauthenticated    = "UNAUTHENTICATED"
+	CodeUnauthorized       = "UNAUTHORIZED"
+	CodeUnexpectedContent  = "UNEXPECTED_CONTENT"
+	CodeUnimplemented      = "UNIMPLEMENTED"
+	CodeUnknownError       = "UNKNOWN_ERROR"
+	CodeUnsupportedValue   = "UNSUPPORTED_VALUE"
 )
 
 type HelpLink struct {
@@ -102,6 +83,7 @@ type Error struct {
 	Meta map[string]any `cbor:"11,keyasint,omitempty" json:"meta,omitempty"`
 }
 
+// To-do: support custom formatter.
 func (e *Error) Error() string {
 	if e == nil {
 		return ""
@@ -109,15 +91,22 @@ func (e *Error) Error() string {
 
 	b := new(strings.Builder)
 
-	if e.ID != "" {
-		b.WriteString(e.ID + " ")
+	switch {
+	case e.Code != "":
+		b.WriteString("code:" + e.Code)
+	case e.ID != "":
+		b.WriteString("id:" + e.ID)
+	case e.Status != 0:
+		b.WriteString("status:" + strconv.Itoa(e.Status))
 	}
 
 	switch {
 	case e.Detail != "":
-		b.WriteString(e.Detail)
+		b.WriteString(" detail:" + e.Detail)
 	case e.Title != "":
-		b.WriteString(e.Title)
+		b.WriteString(" title:" + e.Title)
+	case e.Cause != "":
+		b.WriteString(" cause:" + e.Cause)
 	}
 
 	return b.String()
@@ -175,13 +164,13 @@ func ForwardError(id string, err error) ErrorChain {
 		chain = ErrorChain{&Error{
 			ID:     "01GRA68Y70YTBNSVX7SKW6HJ81",
 			Status: http.StatusInternalServerError,
-			Code:   ErrUnknownError,
+			Code:   CodeUnknownError,
 			Cause:  err.Error(),
 		}}
 	}
 
 	return chain.Add(&Error{
 		ID:   id,
-		Code: ErrForwardedError,
+		Code: CodeForwardedError,
 	})
 }
