@@ -4,7 +4,10 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -162,7 +165,7 @@ func ForwardError(id string, err error) ErrorChain {
 		chain = v
 	default:
 		chain = ErrorChain{&Error{
-			ID:     "01GRA68Y70YTBNSVX7SKW6HJ81",
+			ID:     "1cd23aa9-1844-4672-90d6-2158268bd2ce",
 			Status: http.StatusInternalServerError,
 			Code:   CodeUnknownError,
 			Cause:  err.Error(),
@@ -173,4 +176,33 @@ func ForwardError(id string, err error) ErrorChain {
 		ID:   id,
 		Code: CodeForwardedError,
 	})
+}
+
+// CheckTestError verifies that the given error is the expected error
+// and returns true if err is not null and equals want.
+func CheckTestError(t *testing.T, err error, want *Error) bool {
+	if err == nil {
+		if want == nil {
+			// No error, move on.
+			return false
+		}
+
+		t.Fatal("expected error, got none")
+	}
+
+	if want == nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	have, ok := err.(*Error)
+	if !ok {
+		t.Fatal("err is not a *klib.Error")
+	}
+
+	assert.Equal(t, want.ID, have.ID, "Error.ID mismatch")
+	assert.Equal(t, want.Status, have.Status, "Error.Status mismatch")
+	assert.Equal(t, want.Code, have.Code, "Error.Code mismatch")
+	assert.Equal(t, want.Path, have.Path, "Error.Path mismatch")
+
+	return true
 }
