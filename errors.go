@@ -20,6 +20,7 @@ const (
 	CodeExecutionError     = "EXECUTION_ERROR"
 	CodeExpired            = "EXPIRED"
 	CodeFileError          = "FILE_ERROR"
+	CodeFilesystemError    = "FILESYSTEM_ERROR"
 	CodeForwardedError     = "FORWARDED_ERROR"
 	CodeInternalError      = "INTERNAL_ERROR"
 	CodeInvalidValue       = "INVALID_VALUE"
