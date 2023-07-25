@@ -5,9 +5,11 @@ import (
 )
 
 // InsertSliceElem inserts element in the given slice and index.
-// If index is negative, it is treated as `index+len(slice)+1`, i.e.:
-// - -1 adds to the end of the slice.
-// - -(len(slice)+1) adds to the beginning of the slice.
+// If index is negative, it is treated as `index+len(slice)+1`:
+//   - -1 adds to the end of the slice, i.e., appends the element.
+//   - -(len(slice)+1) is the same as index=0:
+//     it adds to the beginning of the slice,
+//     i.e., prepends the element.
 func InsertSliceElem[T any](slice []T, element T, index int) ([]T, error) {
 	sliceLen := len(slice)
 
